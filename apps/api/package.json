@@ -17,6 +17,7 @@
     "lucia": "^3.2.2"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/node": "^22.0.0"
   }
 }
