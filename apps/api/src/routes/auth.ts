@@ -175,6 +175,10 @@ auth.get("/spotify/callback", async (c) => {
     const profileRes = await fetch("https://api.spotify.com/v1/me", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
+    if (!profileRes.ok) {
+      console.error("Spotify /me failed:", profileRes.status, await profileRes.text());
+      return c.json({ error: "Failed to fetch Spotify profile" }, 502);
+    }
     const profile = await profileRes.json() as { email?: string; id: string };
 
     let userId = stateRow.userId;
@@ -190,7 +194,7 @@ auth.get("/spotify/callback", async (c) => {
       }
     }
 
-    await upsertConnectedService(userId, "spotify", accessToken, refreshToken, expiresAt ?? null);
+    await upsertConnectedService(userId, "spotify", accessToken, refreshToken, expiresAt);
 
     const session = await lucia.createSession(userId, {});
     return c.redirect(`${FRONTEND_URL}/dashboard?session=${session.id}`);
@@ -250,6 +254,10 @@ auth.get("/youtube/callback", async (c) => {
     const profileRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
+    if (!profileRes.ok) {
+      console.error("YouTube /userinfo failed:", profileRes.status, await profileRes.text());
+      return c.json({ error: "Failed to fetch Google profile" }, 502);
+    }
     const profile = await profileRes.json() as { email?: string; sub: string };
 
     let userId = stateRow.userId;
@@ -265,7 +273,7 @@ auth.get("/youtube/callback", async (c) => {
       }
     }
 
-    await upsertConnectedService(userId, "youtube", accessToken, refreshToken, expiresAt ?? null);
+    await upsertConnectedService(userId, "youtube", accessToken, refreshToken, expiresAt);
 
     const session = await lucia.createSession(userId, {});
     return c.redirect(`${FRONTEND_URL}/dashboard?session=${session.id}`);
@@ -392,12 +400,12 @@ auth.get("/pandora/callback", async (c) => {
     const client = getPandora();
     const tokens = await client.validateAuthorizationCode(
       code,
-      "https://www.pandora.com/oauth/v1/token",
-      null
+      "https://www.pandora.com/oauth/v1/token"
     );
     const accessToken = tokens.accessToken();
     const refreshToken = tokens.hasRefreshToken() ? tokens.refreshToken() : null;
-    const expiresAt = tokens.accessTokenExpiresAt();
+    let expiresAt: Date | null = null;
+    try { expiresAt = tokens.accessTokenExpiresAt(); } catch { /* Pandora may omit expires_in */ }
 
     let userId = stateRow.userId;
     if (!userId) {
@@ -407,7 +415,7 @@ auth.get("/pandora/callback", async (c) => {
       await db.insert(users).values({ id: userId, email, passwordHash: dummyHash });
     }
 
-    await upsertConnectedService(userId, "pandora", accessToken, refreshToken, expiresAt ?? null);
+    await upsertConnectedService(userId, "pandora", accessToken, refreshToken, expiresAt);
 
     const session = await lucia.createSession(userId, {});
     return c.redirect(`${FRONTEND_URL}/dashboard?session=${session.id}`);
