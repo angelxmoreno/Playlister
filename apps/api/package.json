@@ -10,9 +10,10 @@
   "dependencies": {
     "@lucia-auth/adapter-drizzle": "^1.1.0",
     "@node-rs/argon2": "^2.0.2",
+    "@paralleldrive/cuid2": "^2.2.2",
     "@playlist-vault/db": "workspace:*",
     "arctic": "^2.1.1",
-    "@paralleldrive/cuid2": "^2.2.2",
+    "drizzle-orm": "^0.45.1",
     "hono": "^4.6.14",
     "lucia": "^3.2.2"
   },
