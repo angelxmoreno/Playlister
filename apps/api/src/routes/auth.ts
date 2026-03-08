@@ -321,8 +321,8 @@ auth.get("/soundcloud/callback", async (c) => {
 
     const client = getSoundCloud();
     const tokens = await client.validateAuthorizationCode(
-      code,
-      "https://api.soundcloud.com/oauth2/token"
+      "https://api.soundcloud.com/oauth2/token",
+      code
     );
     const accessToken = tokens.accessToken();
     const refreshToken = tokens.hasRefreshToken() ? tokens.refreshToken() : null;
@@ -399,8 +399,8 @@ auth.get("/pandora/callback", async (c) => {
 
     const client = getPandora();
     const tokens = await client.validateAuthorizationCode(
-      code,
-      "https://www.pandora.com/oauth/v1/token"
+      "https://www.pandora.com/oauth/v1/token",
+      code
     );
     const accessToken = tokens.accessToken();
     const refreshToken = tokens.hasRefreshToken() ? tokens.refreshToken() : null;
