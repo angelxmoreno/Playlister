@@ -7,10 +7,14 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "concurrently \"bun run dev:api\" \"bun run dev:web\"",
     "dev:api": "cd apps/api && bun run dev",
     "dev:web": "cd apps/web && bun run dev",
     "build": "bun run --filter '*' build",
     "db:generate": "cd packages/db && bun run generate",
     "db:migrate": "cd packages/db && bun run migrate"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
