@@ -46,7 +46,10 @@ Copy the example files and fill in your values:
 ```bash
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
+cp packages/db/.env.example packages/db/.env
 ```
+
+> `packages/db/.env` only needs `DATABASE_URL` — it is used by the migration runner, which runs in its own directory and therefore can't read `apps/api/.env`.
 
 **`apps/api/.env`**
 
