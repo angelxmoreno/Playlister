@@ -314,16 +314,20 @@ auth.get("/soundcloud/callback", async (c) => {
     const client = getSoundCloud();
     const tokens = await client.validateAuthorizationCode(
       code,
-      "https://api.soundcloud.com/oauth2/token",
-      null
+      "https://api.soundcloud.com/oauth2/token"
     );
     const accessToken = tokens.accessToken();
     const refreshToken = tokens.hasRefreshToken() ? tokens.refreshToken() : null;
-    const expiresAt = tokens.accessTokenExpiresAt();
+    let expiresAt: Date | null = null;
+    try { expiresAt = tokens.accessTokenExpiresAt(); } catch { /* SoundCloud omits expires_in */ }
 
     const profileRes = await fetch("https://api.soundcloud.com/me", {
       headers: { Authorization: `OAuth ${accessToken}` },
     });
+    if (!profileRes.ok) {
+      console.error("SoundCloud /me failed:", profileRes.status, await profileRes.text());
+      return c.json({ error: "Failed to fetch SoundCloud profile" }, 502);
+    }
     const profile = await profileRes.json() as { id: number; username: string };
 
     let userId = stateRow.userId;
@@ -339,7 +343,7 @@ auth.get("/soundcloud/callback", async (c) => {
       }
     }
 
-    await upsertConnectedService(userId, "soundcloud", accessToken, refreshToken, expiresAt ?? null);
+    await upsertConnectedService(userId, "soundcloud", accessToken, refreshToken, expiresAt);
 
     const session = await lucia.createSession(userId, {});
     return c.redirect(`${FRONTEND_URL}/dashboard?session=${session.id}`);
